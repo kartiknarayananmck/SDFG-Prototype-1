@@ -66,7 +66,7 @@ function getStoreAction(storeId) {
 // 'to-review' | 'actioned' | 'not-actionable' | 'snoozed'
 function computeStoreWorklist(storeId) {
   const a = getStoreAction(storeId);
-  if (!a || !a.action_status || a.action_status === 'New') return 'to-review';
+  if (!a || !a.action_status || a.action_status === 'New' || a.action_status === 'To Review') return 'to-review';
   if (a.action_status === 'Actioned') return 'actioned';
   if (a.action_status === 'Not Actionable (Permanent)') return 'not-actionable';
   if (a.action_status === 'Not Actionable (Temporary / Snooze)') {
@@ -82,32 +82,36 @@ function getActionCellHtml(storeId, updUrl) {
   const a     = getStoreAction(storeId);
   const today = new Date().toISOString().slice(0, 10);
 
-  let icon = '', label = 'New', cls = 'sa-new', reasonTxt = '';
+  let icon = '', label = 'To Review', cls = 'sa-new', reasonTxt = '';
 
-  if (a && a.action_status && a.action_status !== 'New') {
+  if (a && a.action_status && a.action_status !== 'New' && a.action_status !== 'To Review') {
     const rc = (a.reason_code === 'Other (free text required)' && a.reason_other_text)
-      ? a.reason_other_text.slice(0, 34) + (a.reason_other_text.length > 34 ? '…' : '')
+      ? a.reason_other_text
       : (a.reason_code || '').replace(' (free text required)', '');
 
     if (a.action_status === 'Actioned') {
-      icon = '✅'; label = 'Actioned'; cls = 'sa-actioned'; reasonTxt = rc;
+      icon = '\u2705'; label = 'Actioned'; cls = 'sa-actioned'; reasonTxt = rc;
     } else if (a.action_status === 'Not Actionable (Permanent)') {
-      icon = '🚫'; label = 'Not Actionable'; cls = 'sa-na'; reasonTxt = rc;
+      icon = '\ud83d\udeab'; label = 'Not Actionable'; cls = 'sa-na'; reasonTxt = rc;
     } else if (a.action_status === 'Not Actionable (Temporary / Snooze)') {
       if (a.snooze_until && a.snooze_until >= today) {
-        icon = '⏳'; label = 'Snoozed until ' + a.snooze_until; cls = 'sa-snoozed'; reasonTxt = rc;
+        // Format snooze date as e.g. "Jun 04"
+        const sd = new Date(a.snooze_until + 'T00:00:00');
+        const shortDate = sd.toLocaleDateString('en-CA', { month: 'short', day: '2-digit' });
+        icon = '\u23f3'; label = 'Snoozed (' + shortDate + ')'; cls = 'sa-snoozed'; reasonTxt = rc;
       }
-      // else: expired — falls through to New defaults
+      // else: expired — falls through to To Review defaults
     }
   }
 
   const iconHtml   = icon ? icon + ' ' : '';
-  const reasonLine = reasonTxt ? '<div class="action-reason">' + reasonTxt + '</div>' : '';
-  const newCue     = cls === 'sa-new'
-    ? '<span class="upd-link-inline">Update →</span>' : '';
+  const reasonLine = reasonTxt
+    ? '<div class="action-reason">' + reasonTxt + '</div>' : '';
+  const newCue = cls === 'sa-new'
+    ? '<span class="upd-link-inline">Update \u2192</span>' : '';
 
   return `<a class="action-cell-link" href="${updUrl}" onclick="event.stopPropagation()"
-     title="Click to update action status">
+     title="Click to update status">
     <span class="sa-badge ${cls}">${iconHtml}${label}</span>
     ${reasonLine}
     ${newCue}
@@ -233,6 +237,7 @@ function renderBatch(tab) {
     tr.dataset.id = d.id; tr.dataset.tab = tab;
     if (d.id === ST.selectedId && tab === ST.selectedTab) tr.className = 'selected';
     tr.innerHTML = `
+      <td class="edit-col"><a class="edit-icon-btn" href="${updUrl}" onclick="event.stopPropagation()" title="Update status">✏️</a></td>
       <td><div class="store-name">${d.name}</div><div class="store-meta">#${d.id} · ${d.city} · ${d.banner}</div></td>
       <td class="rep-cell">${d.rep}</td>
       <td><span class="sig-badge ${cls}">${fmtPct(sig.pct)}</span></td>

@@ -149,14 +149,14 @@
       <div class="au-field">
         <label for="au-status">Action Status <span class="req">*</span></label>
         <select id="au-status" class="au-select">
-          <option value="New">New</option>
+          <option value="To Review">To Review</option>
           <option value="Actioned">Actioned</option>
           <option value="Not Actionable (Permanent)">Not Actionable (Permanent)</option>
           <option value="Not Actionable (Temporary / Snooze)">Not Actionable (Temporary / Snooze)</option>
         </select>
       </div>
 
-      <!-- 2. Reason Code (shown when status != New) -->
+      <!-- 2. Reason Code (shown when status != To Review) -->
       <div class="au-field au-hidden" id="au-reason-group">
         <label for="au-reason">Reason Code <span class="req">*</span></label>
         <select id="au-reason" class="au-select">
@@ -280,8 +280,8 @@
   function updateVisibility() {
     const status = fmStatus.value;
 
-    // Reason group: visible when status != New
-    grpReason.classList.toggle('au-hidden', status === 'New');
+    // Reason group: visible when status != To Review
+    grpReason.classList.toggle('au-hidden', status === 'To Review');
 
     // Filter relevant reason optgroups
     rgActioned.style.display = (status === 'Actioned')                                   ? '' : 'none';
@@ -320,7 +320,9 @@
 
   // ── Pre-populate from existing action ────────────────────────────────────
   if (existingAction) {
-    if (existingAction.action_status) fmStatus.value = existingAction.action_status;
+    // Support legacy 'New' value saved before rename
+    const savedStatus = existingAction.action_status === 'New' ? 'To Review' : existingAction.action_status;
+    if (savedStatus) fmStatus.value = savedStatus;
     updateVisibility();
     if (existingAction.reason_code) {
       fmReason.value = existingAction.reason_code;
@@ -362,7 +364,7 @@
     let valid = true;
 
     // Validate reason code
-    if (status !== 'New') {
+    if (status !== 'To Review') {
       const reasonErr = document.getElementById('au-reason-err');
       if (!fmReason.value) {
         reasonErr.style.display = 'block'; valid = false;
@@ -412,7 +414,7 @@
     const prevRecord   = allActions[storeId] || {};
     const newRecord    = {
       action_status:     status,
-      reason_code:       status !== 'New' ? fmReason.value : '',
+      reason_code:       status !== 'To Review' ? fmReason.value : '',
       reason_other_text: fmReason.value === 'Other (free text required)'
                            ? fmOtherText.value.trim().slice(0, 150) : '',
       snooze_until:      snoozeUntil,

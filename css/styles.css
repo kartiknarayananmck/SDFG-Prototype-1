@@ -728,6 +728,40 @@ body.panel-open { padding-bottom: var(--panel-h); }
 }
 .worklist-select:focus { border-color: var(--blue-mid); }
 
+/* ── Edit icon column (pencil) ───────────────────────────────────────────── */
+.edit-col {
+  width: 32px;
+  min-width: 32px;
+  text-align: center;
+  padding: 0 4px !important;
+  vertical-align: middle;
+}
+/* Hide pencil col header text (empty) */
+th.edit-col { background: var(--grey-light); }
+/* Also hide the pencil column in To Review mode (not needed when action col hidden) */
+body.worklist-to-review .edit-col { display: none; }
+
+.edit-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 13px;
+  color: var(--grey-text);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  cursor: pointer;
+}
+.edit-icon-btn:hover {
+  background: var(--blue-light);
+  border-color: var(--blue-mid);
+  color: var(--blue-dark);
+}
+
 /* ── Action column visibility: hidden in To Review mode ─────────────────── */
 body.worklist-to-review .action-col { display: none; }
 
@@ -736,17 +770,25 @@ body.worklist-to-review .action-col { display: none; }
   display: block;
   text-decoration: none;
   color: inherit;
-  padding: 2px 0;
+  padding: 4px 6px;
+  border-radius: var(--radius);
+  transition: background 0.12s;
+  cursor: pointer;
+}
+.action-cell-link:hover {
+  background: var(--blue-light);
 }
 .action-cell-link:hover .sa-badge { filter: brightness(0.93); }
 .action-reason {
   font-size: 10.5px;
   color: var(--grey-text);
   margin-top: 4px;
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
 }
 .upd-link-inline {
   display: inline-block;
@@ -765,15 +807,15 @@ body.worklist-to-review .action-col { display: none; }
   font-size: 10.5px;
   font-weight: 700;
   white-space: nowrap;
-  cursor: default;
+  cursor: pointer;
 }
 .sa-new         { background: #EEF2F8; color: #4A5568; border: 1px solid #CBD5E0; }
 .sa-actioned    { background: #D4F0DC; color: #1B5E20; border: 1px solid #7FCC9A; }
 .sa-na          { background: #F5E6FF; color: #5B1A8A; border: 1px solid #BF80E8; }
 .sa-snoozed     { background: #FFF3CD; color: #7A5800; border: 1px solid #E8C84A; font-size: 9.5px; }
 
-/* ── Status cell (badge + update link stacked) ───────────────────────────── */
-.action-col { vertical-align: middle; }
+/* ── Status cell column ──────────────────────────────────────────────────── */
+.action-col { vertical-align: middle; padding: 6px 8px !important; }
 
 /* ── Reason badge (kept for backward-compat) ─────────────────────────────── */
 
