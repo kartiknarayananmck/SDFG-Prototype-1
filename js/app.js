@@ -229,7 +229,7 @@ function renderBatch(tab) {
       : `<td class="fid-na">—</td>`;
 
     const sigType = tab.includes('leak') ? 'Risk' : 'Opportunity';
-    const updUrl  = `action_update.html?store_id=${d.id}&store_name=${encodeURIComponent(d.name)}&rep=${encodeURIComponent(d.rep)}&signal_type=${sigType}&return_tab=${tab}`;
+    const updUrl  = `action_update.html?store_id=${d.id}&store_name=${encodeURIComponent(d.name)}&rep=${encodeURIComponent(d.rep)}&signal_type=${sigType}&return_tab=${tab}&worklist_view=${ST.worklist}`;
     const tr = document.createElement('tr');
     tr.dataset.id = d.id; tr.dataset.tab = tab;
     if (d.id === ST.selectedId && tab === ST.selectedTab) tr.className = 'selected';
@@ -711,7 +711,7 @@ function openPanel(store, tab) {
   const fidBtn = isPrimary
     ? `<button class="act-btn act-btn--primary" onclick="openFidelity(${store.id})">📊 See Fidelity Data</button>` : '';
   const sigTypePanel = tab.includes('leak') ? 'Risk' : 'Opportunity';
-  const updUrlPanel  = `action_update.html?store_id=${store.id}&store_name=${encodeURIComponent(store.name)}&rep=${encodeURIComponent(store.rep)}&signal_type=${sigTypePanel}&return_tab=${tab}`;
+  const updUrlPanel  = `action_update.html?store_id=${store.id}&store_name=${encodeURIComponent(store.name)}&rep=${encodeURIComponent(store.rep)}&signal_type=${sigTypePanel}&return_tab=${tab}&worklist_view=${ST.worklist}`;
   $el('dp-actions').innerHTML = `
     ${fidBtn}
     <button class="act-btn act-btn--primary" onclick="openProductTrend(${store.id},'${tab}')">📦 Analyse Product Trend</button>
@@ -1363,14 +1363,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle return from action_update.html
   const urlParams = new URLSearchParams(location.search);
-  const returnTab = urlParams.get('return_tab') || 'primary-opp';
+  const returnTab      = urlParams.get('return_tab')      || 'primary-opp';
+  const returnWorklist = urlParams.get('worklist_view')   || null;
   if (urlParams.get('status_updated') === '1') {
     const updatedStore = urlParams.get('store_name') || 'Store';
     history.replaceState({}, '', 'index.html');
+    if (returnWorklist) setWorklist(returnWorklist);
     switchTab(returnTab);
     showToast('✓ Action status saved for ' + updatedStore);
   } else if (urlParams.get('return_tab')) {
     history.replaceState({}, '', 'index.html');
+    if (returnWorklist) setWorklist(returnWorklist);
     switchTab(returnTab);
   } else {
     switchTab('primary-opp');

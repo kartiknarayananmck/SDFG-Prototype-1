@@ -235,12 +235,13 @@
   const ACTIONS_KEY = 'sdfg_store_actions';
 
   // ── Parse URL params ────────────────────────────────────────────────────────
-  const params     = new URLSearchParams(location.search);
-  const storeId    = params.get('store_id')    || '';
-  const storeName  = params.get('store_name')  || 'Unknown Store';
-  const rep        = params.get('rep')         || 'Demo User';
-  const signalType = params.get('signal_type') || 'Opportunity';
-  const returnTab  = params.get('return_tab')  || 'primary-opp';
+  const params        = new URLSearchParams(location.search);
+  const storeId       = params.get('store_id')      || '';
+  const storeName     = params.get('store_name')    || 'Unknown Store';
+  const rep           = params.get('rep')           || 'Demo User';
+  const signalType    = params.get('signal_type')   || 'Opportunity';
+  const returnTab     = params.get('return_tab')    || 'primary-opp';
+  const returnWorklist = params.get('worklist_view') || 'to-review';
 
   // ── Prefill read-only display ────────────────────────────────────────────
   document.getElementById('au-store-id').textContent   = storeId   || '—';
@@ -354,7 +355,8 @@
 
   // ── Cancel ────────────────────────────────────────────────────────────────
   document.getElementById('au-cancel-btn').addEventListener('click', () => {
-    window.location.href = 'index.html?return_tab=' + encodeURIComponent(returnTab);
+    window.location.href = 'index.html?return_tab=' + encodeURIComponent(returnTab)
+      + '&worklist_view=' + encodeURIComponent(returnWorklist);
   });
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -437,7 +439,8 @@
     // ── Redirect back ─────────────────────────────────────────────────────
     window.location.href = 'index.html?status_updated=1'
       + '&store_name=' + encodeURIComponent(storeName)
-      + '&return_tab=' + encodeURIComponent(returnTab);
+      + '&return_tab=' + encodeURIComponent(returnTab)
+      + '&worklist_view=' + encodeURIComponent(returnWorklist);
   });
 
 })();
