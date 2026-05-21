@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDFG v2.1 — Sales Data for Growth | McKesson Canada</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── App Header ── -->
+<header class="app-header">
+  <div class="logo">Mc<span>K</span>ESSON</div>
+  <div class="app-title">Sales Data for Growth</div>
+  <div class="app-meta">Data through May 2, 2026 &nbsp;·&nbsp; Refreshed May 5, 2026 09:02</div>
+</header>
+
+<!-- ── Control Bar ── -->
+<div class="control-bar" id="control-bar">
+  <!-- Row 1: Signal filters -->
+  <div class="control-row control-row--top">
+    <div class="slicer-group">
+      <span class="slicer-label">Anomaly Sensitivity</span>
+      <div class="slicer-btns">
+        <button class="slicer-btn" data-sens="low"      onclick="setSensitivity('low')">Low</button>
+        <button class="slicer-btn" data-sens="medium"   onclick="setSensitivity('medium')">Medium</button>
+        <button class="slicer-btn active" data-sens="high" onclick="setSensitivity('high')">High</button>
+        <button class="slicer-btn" data-sens="veryhigh" onclick="setSensitivity('veryhigh')">Very High</button>
+      </div>
+    </div>
+    <div class="slicer-group">
+      <span class="slicer-label">Persistence Window</span>
+      <div class="slicer-btns">
+        <button class="slicer-btn" data-persist="p2" onclick="setPersistence('p2')">2 Weeks</button>
+        <button class="slicer-btn active" data-persist="p3" onclick="setPersistence('p3')">3 Weeks</button>
+        <button class="slicer-btn" data-persist="p4" onclick="setPersistence('p4')">4 Weeks</button>
+      </div>
+    </div>
+    <div class="slicer-group">
+      <span class="slicer-label">RX / OTC</span>
+      <div class="slicer-btns">
+        <button class="slicer-btn active" data-rxotc="all" onclick="setRxOtc('all')">All</button>
+        <button class="slicer-btn" data-rxotc="RX"  onclick="setRxOtc('RX')">RX</button>
+        <button class="slicer-btn" data-rxotc="OTC" onclick="setRxOtc('OTC')">OTC</button>
+      </div>
+    </div>
+  </div>
+  <!-- Row 2: Worklist + search -->
+  <div class="control-row control-row--bottom">
+    <div class="slicer-group">
+      <span class="slicer-label">Worklist View</span>
+      <select class="worklist-select" id="worklist-select" onchange="setWorklist(this.value)">
+        <option value="to-review" selected>📋 To Review</option>
+        <option value="snoozed">⏳ Snoozed</option>
+        <option value="actioned">✅ Actioned</option>
+        <option value="not-actionable">🚫 Not Actionable</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+    <div class="slicer-group cb-search-group">
+      <input class="search-input" type="text" placeholder="Search store, city…" oninput="onSearch(this.value)" />
+      <select class="rep-select" id="rep-select" onchange="onRep(this.value)">
+        <option value="">All Reps</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ── 4 Tabs ── -->
+<nav class="tabs-nav">
+  <button class="tab-btn active" data-tab="primary-opp"   onclick="switchTab('primary-opp')">📈 Primary — Opportunities</button>
+  <button class="tab-btn"        data-tab="primary-leak"  onclick="switchTab('primary-leak')">📉 Primary — Leakage</button>
+  <button class="tab-btn"        data-tab="secondary-opp" onclick="switchTab('secondary-opp')">📈 Secondary — Opportunities</button>
+  <button class="tab-btn"        data-tab="secondary-leak" onclick="switchTab('secondary-leak')">📉 Secondary — Leakage</button>
+  <button class="tab-btn tab-btn--kpi" data-tab="primary-opp2" onclick="switchTab('primary-opp2')">🧪 Primary Opp 2 — KPI Ranking</button>
+  <button class="tab-btn tab-btn--kpi" data-tab="primary-opp3" onclick="switchTab('primary-opp3')">🎯 Primary Opp 3 — Relative Impact</button>
+</nav>
+
+<!-- TAB: Primary Opportunities -->
+<div class="tab-panel active" id="tab-primary-opp">
+  <div class="tab-subbar">
+    <span id="count-primary-opp" class="tab-count"></span>
+    <span class="tab-desc">Stores with sales spikes — ranked by Signal $ Delta</span>
+  </div>
+  <div class="list-wrap">
+    <table class="ranked-table">
+      <colgroup>
+        <col style="width:24%"><col style="width:11%"><col style="width:8%"><col style="width:8%">
+        <col class="action-col" style="width:18%"><col>
+      </colgroup>
+      <thead><tr>
+        <th>Pharmacy</th><th>Rep</th><th>Signal %</th><th>Fidelity %</th>
+        <th class="action-col">Action</th><th>Signal $ Delta ▼</th>
+      </tr></thead>
+      <tbody id="tbody-primary-opp"></tbody>
+    </table>
+    <div id="sentinel-primary-opp" style="height:4px"></div>
+  </div>
+</div>
+
+<!-- TAB: Primary Leakage -->
+<div class="tab-panel" id="tab-primary-leak">
+  <div class="tab-subbar">
+    <span id="count-primary-leak" class="tab-count"></span>
+    <span class="tab-desc">Stores with sales declines — ranked by Signal $ Delta</span>
+  </div>
+  <div class="list-wrap">
+    <table class="ranked-table">
+      <colgroup>
+        <col style="width:24%"><col style="width:11%"><col style="width:8%"><col style="width:8%">
+        <col class="action-col" style="width:18%"><col>
+      </colgroup>
+      <thead><tr>
+        <th>Pharmacy</th><th>Rep</th><th>Signal %</th><th>Fidelity %</th>
+        <th class="action-col">Action</th><th>Signal $ Delta ▼</th>
+      </tr></thead>
+      <tbody id="tbody-primary-leak"></tbody>
+    </table>
+    <div id="sentinel-primary-leak" style="height:4px"></div>
+  </div>
+</div>
+
+<!-- TAB: Secondary Opportunities -->
+<div class="tab-panel" id="tab-secondary-opp">
+  <div class="tab-subbar">
+    <span id="count-secondary-opp" class="tab-count"></span>
+    <span class="tab-desc">Stores with sales spikes — ranked by Signal $ Delta</span>
+  </div>
+  <div class="list-wrap">
+    <table class="ranked-table">
+      <colgroup>
+        <col style="width:24%"><col style="width:11%"><col style="width:8%"><col style="width:8%">
+        <col class="action-col" style="width:18%"><col>
+      </colgroup>
+      <thead><tr>
+        <th>Pharmacy</th><th>Rep</th><th>Signal %</th><th>Fidelity %</th>
+        <th class="action-col">Action</th><th>Signal $ Delta ▼</th>
+      </tr></thead>
+      <tbody id="tbody-secondary-opp"></tbody>
+    </table>
+    <div id="sentinel-secondary-opp" style="height:4px"></div>
+  </div>
+</div>
+
+<!-- TAB: Secondary Leakage -->
+<div class="tab-panel" id="tab-secondary-leak">
+  <div class="tab-subbar">
+    <span id="count-secondary-leak" class="tab-count"></span>
+    <span class="tab-desc">Stores with sales declines — ranked by Signal $ Delta</span>
+  </div>
+  <div class="list-wrap">
+    <table class="ranked-table">
+      <colgroup>
+        <col style="width:24%"><col style="width:11%"><col style="width:8%"><col style="width:8%">
+        <col class="action-col" style="width:18%"><col>
+      </colgroup>
+      <thead><tr>
+        <th>Pharmacy</th><th>Rep</th><th>Signal %</th><th>Fidelity %</th>
+        <th class="action-col">Action</th><th>Signal $ Delta ▼</th>
+      </tr></thead>
+      <tbody id="tbody-secondary-leak"></tbody>
+    </table>
+    <div id="sentinel-secondary-leak" style="height:4px"></div>
+  </div>
+</div>
+
+<!-- TAB: Primary Opportunity 2 — KPI Ranking Test -->
+<div class="tab-panel" id="tab-primary-opp2">
+  <div class="tab-subbar">
+    <span id="count-primary-opp2" class="tab-count"></span>
+    <span class="tab-desc">KPI diagnostic ranking · Signal $ base + peer-context penalties · No stores removed</span>
+  </div>
+  <div class="list-wrap list-wrap--wide">
+    <table class="ranked-table ranked-table--kpi">
+      <colgroup>
+        <col style="width:22%"><col style="width:9%"><col style="width:6%"><col style="width:7%">
+        <col style="width:16%">
+        <col style="width:4%"><col style="width:7%"><col>
+      </colgroup>
+      <thead><tr>
+        <th>Pharmacy</th>
+        <th>Rep</th>
+        <th>Signal %</th>
+        <th>Fidelity %</th>
+        <th title="Indicates whether this signal is driven primarily by the individual store or by broader market conditions, based on both direction and relative magnitude.">Market Context</th>
+        <th title="Size tier by L12M sales: S = Small · M = Medium · L = Large">Size</th>
+        <th title="Single-driver = top product >70% of window delta">Conc.</th>
+        <th>Signal $ Delta ▼</th>
+      </tr></thead>
+      <tbody id="tbody-primary-opp2"></tbody>
+    </table>
+    <div id="sentinel-primary-opp2" style="height:4px"></div>
+  </div>
+</div>
+
+<!-- TAB: Primary Opportunity 3 — Relative Impact KPI Ranking -->
+<div class="tab-panel" id="tab-primary-opp3">
+  <div class="tab-subbar">
+    <span id="count-primary-opp3" class="tab-count"></span>
+    <span class="tab-desc">Relative Impact ranking · ABS(Actual − Expected market delta) · No stores removed · Peer % in tooltips only</span>
+  </div>
+  <div class="list-wrap list-wrap--wide">
+    <table class="ranked-table ranked-table--kpi">
+      <colgroup>
+        <col style="width:24%"><col style="width:9%"><col style="width:7%"><col style="width:7%">
+        <col style="width:14%"><col style="width:11%"><col style="width:5%"><col style="width:8%"><col>
+      </colgroup>
+      <thead><tr>
+        <th>Pharmacy</th>
+        <th>Rep</th>
+        <th>Signal %</th>
+        <th>Fidelity %</th>
+        <th title="Actual store delta minus expected delta based on banner/province/McK share. Primary sort key.">Relative Impact $ ▼</th>
+        <th title="Outperforming = beats blended peer expectation | In-line = within threshold | Underperforming = lags peers">Peer Context</th>
+        <th title="Size tier by L12M sales: S=Small · M=Medium · L=Large">Size</th>
+        <th title="Single-driver = top product >70% of window delta">Conc.</th>
+        <th>Signal $ Delta</th>
+      </tr></thead>
+      <tbody id="tbody-primary-opp3"></tbody>
+    </table>
+    <div id="sentinel-primary-opp3" style="height:4px"></div>
+  </div>
+</div>
+
+<!-- ── Fixed Bottom Detail Panel ── -->
+<div class="detail-panel" id="detail-panel">
+  <!-- 1. Header row -->
+  <div class="dp-header">
+    <div class="dp-store" id="dp-store"></div>
+    <div class="dp-sub"   id="dp-sub"></div>
+    <button class="dp-close" onclick="closePanel()">✕</button>
+  </div>
+  <!-- 2. Insight band (green) – all KPIs -->
+  <div class="dp-insight" id="dp-insight"></div>
+  <!-- 3. Full-width 53-week trend chart -->
+  <div class="dp-chart-area">
+    <div class="dp-chart-meta">
+      <span class="dp-chart-title">Last 53 Weeks of McKesson Sales</span>
+      <span class="narr-text" id="dp-narrative"></span>
+      <span class="scenario-badge" id="dp-scenario" style="display:none"></span>
+    </div>
+    <canvas id="trend-canvas"></canvas>
+  </div>
+  <!-- 4. Action bar (blue) -->
+  <div class="dp-actions-bar">
+    <div id="dp-actions"></div>
+  </div>
+</div>
+
+<!-- ── Fidelity Full-Page Overlay ── -->
+<div class="fid-overlay" id="fid-overlay">
+  <div class="fov-topbar">
+    <button class="fov-topbar-back" onclick="closeFidelity()">← Back</button>
+    <div class="fov-topbar-title">Fidelity Analysis — McKesson Canada</div>
+  </div>
+  <div class="fov-scroll">
+    <div id="fid-overlay-body"></div>
+  </div>
+</div>
+
+<!-- ── Product Trend Full-Page Overlay ── -->
+<div class="prod-overlay" id="prod-overlay">
+  <div class="pov-topbar" id="pov-topbar">
+    <button class="pov-topbar-back" onclick="closeProductTrend()">← Back</button>
+    <div class="pov-topbar-title" id="pov-title">Product Trend Analysis</div>
+    <div class="pov-topbar-slicer">
+      <span class="pov-topbar-label">RX/OTC</span>
+      <button class="pov-topbar-btn active" data-provrxotc="all" onclick="setPovRxOtc('all')">All</button>
+      <button class="pov-topbar-btn" data-provrxotc="RX"  onclick="setPovRxOtc('RX')">RX</button>
+      <button class="pov-topbar-btn" data-provrxotc="OTC" onclick="setPovRxOtc('OTC')">OTC</button>
+    </div>
+    <button class="pov-topbar-fid-btn" id="pov-fid-btn" style="display:none" onclick="openFidelityFromProd()">📊 See Fidelity Data</button>
+  </div>
+  <div class="pov-scroll" id="pov-scroll">
+    <div id="prod-overlay-body"></div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

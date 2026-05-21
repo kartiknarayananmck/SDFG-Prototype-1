@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Update Action Status — SDFG | McKesson Canada</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .au-page {
+      min-height: calc(100vh - 52px);
+      background: var(--grey-light);
+      display: flex;
+      justify-content: center;
+      padding: 32px 20px 60px;
+    }
+    .au-card {
+      background: var(--white);
+      border: 1px solid var(--grey-border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 600px;
+      padding: 28px 32px;
+      align-self: flex-start;
+    }
+    .au-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--blue-dark);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--blue-light);
+    }
+    .au-prefill {
+      background: var(--blue-light);
+      border: 1px solid #C5D8F5;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+    }
+    .au-prefill-item { display: flex; flex-direction: column; gap: 2px; }
+    .au-prefill-lbl {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; color: var(--grey-text);
+    }
+    .au-prefill-val { font-weight: 600; color: var(--blue-dark); font-size: 13px; }
+    .au-prefill-val.risk { color: var(--red); }
+    .au-prefill-val.opp  { color: var(--green); }
+
+    .au-field { margin-bottom: 18px; }
+    .au-field label {
+      display: block;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; color: var(--grey-text);
+      margin-bottom: 6px;
+    }
+    .au-field label .req { color: var(--red); margin-left: 2px; }
+    .au-select, .au-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--grey-border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .au-select:focus, .au-input:focus {
+      border-color: var(--blue-mid);
+      box-shadow: 0 0 0 2px rgba(0,87,184,0.12);
+    }
+    .au-char-count { font-size: 10px; color: var(--grey-text); text-align: right; margin-top: 3px; }
+    .au-error { color: var(--red); font-size: 11px; margin-top: 4px; display: none; }
+
+    .au-actions {
+      display: flex;
+      gap: 10px;
+      padding-top: 20px;
+      border-top: 1px solid var(--grey-border);
+      margin-top: 8px;
+    }
+    .au-btn-save {
+      flex: 1;
+      padding: 10px 24px;
+      background: var(--blue-dark);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .au-btn-save:hover { background: var(--blue-mid); }
+    .au-btn-cancel {
+      padding: 10px 20px;
+      background: var(--white);
+      color: var(--grey-text);
+      border: 1px solid var(--grey-border);
+      border-radius: var(--radius);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.15s;
+    }
+    .au-btn-cancel:hover { background: var(--grey-light); color: var(--text); }
+
+    .au-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">Mc<span>K</span>ESSON</div>
+  <div class="app-title">Sales Data for Growth — Update Action Status</div>
+  <div class="app-meta">Prototype / Demo</div>
+</header>
+
+<div class="au-page">
+  <div class="au-card">
+    <h2>Update Action Status</h2>
+
+    <!-- Read-only store context -->
+    <div class="au-prefill">
+      <div class="au-prefill-item">
+        <span class="au-prefill-lbl">Customer #</span>
+        <span class="au-prefill-val" id="au-store-id">—</span>
+      </div>
+      <div class="au-prefill-item">
+        <span class="au-prefill-lbl">Store Name</span>
+        <span class="au-prefill-val" id="au-store-name">—</span>
+      </div>
+      <div class="au-prefill-item">
+        <span class="au-prefill-lbl">Rep</span>
+        <span class="au-prefill-val" id="au-rep">—</span>
+      </div>
+      <div class="au-prefill-item">
+        <span class="au-prefill-lbl">Signal Type</span>
+        <span class="au-prefill-val" id="au-signal-type">—</span>
+      </div>
+    </div>
+
+    <form id="au-form" novalidate>
+
+      <!-- 1. Action Status -->
+      <div class="au-field">
+        <label for="au-status">Action Status <span class="req">*</span></label>
+        <select id="au-status" class="au-select">
+          <option value="New">New</option>
+          <option value="Actioned">Actioned</option>
+          <option value="Not Actionable (Permanent)">Not Actionable (Permanent)</option>
+          <option value="Not Actionable (Temporary / Snooze)">Not Actionable (Temporary / Snooze)</option>
+        </select>
+      </div>
+
+      <!-- 2. Reason Code (shown when status != New) -->
+      <div class="au-field au-hidden" id="au-reason-group">
+        <label for="au-reason">Reason Code <span class="req">*</span></label>
+        <select id="au-reason" class="au-select">
+          <option value="" disabled selected>— Select a reason —</option>
+          <optgroup label="── Actioned" id="rg-actioned">
+            <option>Contacted customer / discussed</option>
+            <option>Follow-up planned</option>
+            <option>Escalated internally (pricing/supply)</option>
+            <option>Monitoring after discussion</option>
+          </optgroup>
+          <optgroup label="── Not Actionable (Temporary)" id="rg-temp">
+            <option>Vendor blackout / competitor outage</option>
+            <option>One-time bulk purchase / stocking event</option>
+            <option>Temporary product availability issue</option>
+            <option>Seasonal / temporary demand spike</option>
+            <option>Already aware (temporary)</option>
+          </optgroup>
+          <optgroup label="── Not Actionable (Permanent)" id="rg-perm">
+            <option>Market-driven / broad trend</option>
+            <option>Low impact (small $ value)</option>
+            <option>Already known / expected behaviour</option>
+            <option>Contract limitation / customer constraint</option>
+            <option>Not in rep control</option>
+          </optgroup>
+          <optgroup label="── Data Quality">
+            <option>Suspected false positive</option>
+            <option>Data inconsistency / data issue</option>
+          </optgroup>
+          <optgroup label="── Other">
+            <option value="Other (free text required)">Other (free text required)</option>
+          </optgroup>
+        </select>
+        <div class="au-error" id="au-reason-err">Please select a reason code.</div>
+      </div>
+
+      <!-- 3. Snooze Duration (shown when status = Temporary / Snooze) -->
+      <div class="au-field au-hidden" id="au-snooze-group">
+        <label for="au-snooze-dur">Snooze Duration <span class="req">*</span></label>
+        <select id="au-snooze-dur" class="au-select">
+          <option value="1">1 week</option>
+          <option value="2" selected>2 weeks</option>
+          <option value="4">4 weeks</option>
+          <option value="custom">Custom date</option>
+        </select>
+      </div>
+
+      <!-- 3b. Custom snooze date (shown when snooze_duration = custom) -->
+      <div class="au-field au-hidden" id="au-snooze-date-group">
+        <label for="au-snooze-date">Snooze Until <span class="req">*</span></label>
+        <input type="date" id="au-snooze-date" class="au-input" />
+        <div class="au-error" id="au-snooze-date-err">Please select a future date.</div>
+      </div>
+
+      <!-- 4. Other reason text (shown when reason = Other) -->
+      <div class="au-field au-hidden" id="au-other-group">
+        <label for="au-other-text">Other Reason <span class="req">*</span></label>
+        <input type="text" id="au-other-text" class="au-input" maxlength="150"
+               placeholder="Briefly describe the reason (max 150 characters)" />
+        <div class="au-char-count"><span id="au-char-used">0</span> / 150</div>
+        <div class="au-error" id="au-other-err">Please enter a reason (required when Other is selected).</div>
+      </div>
+
+      <div class="au-actions">
+        <button type="submit" class="au-btn-save">Save Status</button>
+        <button type="button" class="au-btn-cancel" id="au-cancel-btn">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const ACTIONS_KEY = 'sdfg_store_actions';
+
+  // ── Parse URL params ────────────────────────────────────────────────────────
+  const params     = new URLSearchParams(location.search);
+  const storeId    = params.get('store_id')    || '';
+  const storeName  = params.get('store_name')  || 'Unknown Store';
+  const rep        = params.get('rep')         || 'Demo User';
+  const signalType = params.get('signal_type') || 'Opportunity';
+  const returnTab  = params.get('return_tab')  || 'primary-opp';
+
+  // ── Prefill read-only display ────────────────────────────────────────────
+  document.getElementById('au-store-id').textContent   = storeId   || '—';
+  document.getElementById('au-store-name').textContent = storeName;
+  document.getElementById('au-rep').textContent        = rep;
+  const sigEl = document.getElementById('au-signal-type');
+  sigEl.textContent = signalType;
+  sigEl.className   = 'au-prefill-val ' + (signalType === 'Risk' ? 'risk' : 'opp');
+
+  // ── Load actions from localStorage ──────────────────────────────────────
+  function loadActions() {
+    try { return JSON.parse(localStorage.getItem(ACTIONS_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  const existingAction = storeId ? (loadActions()[storeId] || null) : null;
+
+  // ── Element refs ─────────────────────────────────────────────────────────
+  const fmStatus      = document.getElementById('au-status');
+  const fmReason      = document.getElementById('au-reason');
+  const fmSnoozeDur   = document.getElementById('au-snooze-dur');
+  const fmSnoozeDate  = document.getElementById('au-snooze-date');
+  const fmOtherText   = document.getElementById('au-other-text');
+  const grpReason     = document.getElementById('au-reason-group');
+  const grpSnooze     = document.getElementById('au-snooze-group');
+  const grpSnoozeDate = document.getElementById('au-snooze-date-group');
+  const grpOther      = document.getElementById('au-other-group');
+  const rgActioned    = document.getElementById('rg-actioned');
+  const rgTemp        = document.getElementById('rg-temp');
+  const rgPerm        = document.getElementById('rg-perm');
+
+  // Set min date for date picker (tomorrow)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  fmSnoozeDate.min = tomorrow.toISOString().slice(0, 10);
+
+  // ── Visibility logic ──────────────────────────────────────────────────────
+  function updateVisibility() {
+    const status = fmStatus.value;
+
+    // Reason group: visible when status != New
+    grpReason.classList.toggle('au-hidden', status === 'New');
+
+    // Filter relevant reason optgroups
+    rgActioned.style.display = (status === 'Actioned')                                   ? '' : 'none';
+    rgTemp.style.display     = (status === 'Not Actionable (Temporary / Snooze)')        ? '' : 'none';
+    rgPerm.style.display     = (status === 'Not Actionable (Permanent)')                 ? '' : 'none';
+
+    // Snooze group: visible only for Temporary
+    grpSnooze.classList.toggle('au-hidden', status !== 'Not Actionable (Temporary / Snooze)');
+
+    if (status !== 'Not Actionable (Temporary / Snooze)') {
+      grpSnoozeDate.classList.add('au-hidden');
+    } else {
+      updateSnoozeVisibility();
+    }
+
+    updateOtherVisibility();
+  }
+
+  function updateSnoozeVisibility() {
+    const dur = fmSnoozeDur.value;
+    grpSnoozeDate.classList.toggle('au-hidden', dur !== 'custom');
+    if (dur !== 'custom') {
+      const d = new Date();
+      d.setDate(d.getDate() + parseInt(dur, 10) * 7);
+      fmSnoozeDate.value = d.toISOString().slice(0, 10);
+    } else {
+      fmSnoozeDate.value = '';
+    }
+  }
+
+  function updateOtherVisibility() {
+    const isOther = fmReason.value === 'Other (free text required)';
+    grpOther.classList.toggle('au-hidden', !isOther);
+    if (!isOther) { fmOtherText.value = ''; document.getElementById('au-char-used').textContent = '0'; }
+  }
+
+  // ── Pre-populate from existing action ────────────────────────────────────
+  if (existingAction) {
+    if (existingAction.action_status) fmStatus.value = existingAction.action_status;
+    updateVisibility();
+    if (existingAction.reason_code) {
+      fmReason.value = existingAction.reason_code;
+      updateOtherVisibility();
+    }
+    if (existingAction.snooze_until) {
+      fmSnoozeDur.value  = 'custom';
+      fmSnoozeDate.value = existingAction.snooze_until;
+      grpSnoozeDate.classList.remove('au-hidden');
+    }
+    if (existingAction.reason_other_text) {
+      fmOtherText.value = existingAction.reason_other_text;
+      document.getElementById('au-char-used').textContent = existingAction.reason_other_text.length;
+    }
+  } else {
+    updateVisibility();
+  }
+
+  // ── Event listeners ───────────────────────────────────────────────────────
+  fmStatus.addEventListener('change', () => {
+    fmReason.value = '';
+    updateVisibility();
+  });
+  fmSnoozeDur.addEventListener('change', updateSnoozeVisibility);
+  fmReason.addEventListener('change', updateOtherVisibility);
+  fmOtherText.addEventListener('input', () => {
+    document.getElementById('au-char-used').textContent = fmOtherText.value.length;
+  });
+
+  // ── Cancel ────────────────────────────────────────────────────────────────
+  document.getElementById('au-cancel-btn').addEventListener('click', () => {
+    window.location.href = 'index.html?return_tab=' + encodeURIComponent(returnTab);
+  });
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  document.getElementById('au-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const status = fmStatus.value;
+    let valid = true;
+
+    // Validate reason code
+    if (status !== 'New') {
+      const reasonErr = document.getElementById('au-reason-err');
+      if (!fmReason.value) {
+        reasonErr.style.display = 'block'; valid = false;
+      } else {
+        reasonErr.style.display = 'none';
+      }
+    }
+
+    // Validate custom snooze date
+    const today = new Date().toISOString().slice(0, 10);
+    if (status === 'Not Actionable (Temporary / Snooze)' && fmSnoozeDur.value === 'custom') {
+      const dateErr = document.getElementById('au-snooze-date-err');
+      if (!fmSnoozeDate.value || fmSnoozeDate.value <= today) {
+        dateErr.style.display = 'block'; valid = false;
+      } else {
+        dateErr.style.display = 'none';
+      }
+    }
+
+    // Validate other reason text
+    if (fmReason.value === 'Other (free text required)') {
+      const otherErr = document.getElementById('au-other-err');
+      if (!fmOtherText.value.trim()) {
+        otherErr.style.display = 'block'; valid = false;
+      } else {
+        otherErr.style.display = 'none';
+      }
+    }
+
+    if (!valid) return;
+
+    // ── Compute snooze_until ──────────────────────────────────────────────
+    let snoozeUntil = '';
+    if (status === 'Not Actionable (Temporary / Snooze)') {
+      if (fmSnoozeDur.value === 'custom') {
+        snoozeUntil = fmSnoozeDate.value;
+      } else {
+        const d = new Date();
+        d.setDate(d.getDate() + parseInt(fmSnoozeDur.value, 10) * 7);
+        snoozeUntil = d.toISOString().slice(0, 10);
+      }
+    }
+
+    // ── Build record ──────────────────────────────────────────────────────
+    const now = new Date().toISOString();
+    const allActions   = loadActions();
+    const prevRecord   = allActions[storeId] || {};
+    const newRecord    = {
+      action_status:     status,
+      reason_code:       status !== 'New' ? fmReason.value : '',
+      reason_other_text: fmReason.value === 'Other (free text required)'
+                           ? fmOtherText.value.trim().slice(0, 150) : '',
+      snooze_until:      snoozeUntil,
+      created_timestamp: prevRecord.created_timestamp || now,
+      updated_timestamp: now,
+      updated_by:        rep || 'Demo User'
+    };
+
+    // ── Persist ───────────────────────────────────────────────────────────
+    if (storeId) {
+      allActions[storeId] = newRecord;
+      try {
+        localStorage.setItem(ACTIONS_KEY, JSON.stringify(allActions));
+      } catch (err) {
+        alert('Could not save to browser storage: ' + err.message);
+        return;
+      }
+    }
+
+    // ── Redirect back ─────────────────────────────────────────────────────
+    window.location.href = 'index.html?status_updated=1'
+      + '&store_name=' + encodeURIComponent(storeName)
+      + '&return_tab=' + encodeURIComponent(returnTab);
+  });
+
+})();
+</script>
+
+</body>
+</html>
