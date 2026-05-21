@@ -738,8 +738,7 @@ body.panel-open { padding-bottom: var(--panel-h); }
 }
 /* Hide pencil col header text (empty) */
 th.edit-col { background: var(--grey-light); }
-/* Also hide the pencil column in To Review mode (not needed when action col hidden) */
-body.worklist-to-review .edit-col { display: none; }
+/* Pencil column is visible in ALL views */
 
 .edit-icon-btn {
   display: inline-flex;

@@ -107,14 +107,11 @@ function getActionCellHtml(storeId, updUrl) {
   const iconHtml   = icon ? icon + ' ' : '';
   const reasonLine = reasonTxt
     ? '<div class="action-reason">' + reasonTxt + '</div>' : '';
-  const newCue = cls === 'sa-new'
-    ? '<span class="upd-link-inline">Update \u2192</span>' : '';
 
   return `<a class="action-cell-link" href="${updUrl}" onclick="event.stopPropagation()"
      title="Click to update status">
     <span class="sa-badge ${cls}">${iconHtml}${label}</span>
     ${reasonLine}
-    ${newCue}
   </a>`;
 }
 
