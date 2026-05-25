@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDFG v2.1 — User Manual | McKesson Canada</title>
+  <style>
+    :root {
+      --blue-dark: #003087;
+      --blue-mid:  #0057B8;
+      --blue-light: #E8F0FB;
+      --green:  #1B5E20;
+      --green-bg: #D4F0DC;
+      --orange: #7A5800;
+      --orange-bg: #FFF3CD;
+      --purple: #5B1A8A;
+      --purple-bg: #F5E6FF;
+      --grey:   #4A5568;
+      --grey-bg: #EEF2F8;
+      --white: #fff;
+      --text: #1A2744;
+      --font: 'Segoe UI', system-ui, sans-serif;
+      --radius: 6px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: #F7F9FC; line-height: 1.6; }
+
+    /* Sidebar TOC */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 260px; min-width: 260px; background: var(--blue-dark); color: #fff;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      padding: 0 0 32px;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+    .sidebar-logo {
+      padding: 20px 20px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      margin-bottom: 8px;
+    }
+    .sidebar-logo .logo-mck { font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+    .sidebar-logo .logo-mck span { color: #F5A623; }
+    .sidebar-logo .logo-sub { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+    .sidebar-logo .logo-manual { font-size: 12px; font-weight: 700; color: #90CAF9; margin-top: 6px; }
+    .toc-section { padding: 6px 0; }
+    .toc-group-label {
+      padding: 8px 20px 4px;
+      font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: rgba(255,255,255,0.45);
+    }
+    .toc-link {
+      display: block; padding: 6px 20px 6px 28px;
+      font-size: 12.5px; color: rgba(255,255,255,0.82); text-decoration: none;
+      border-left: 3px solid transparent; transition: all 0.1s;
+    }
+    .toc-link:hover, .toc-link.active {
+      color: #fff; background: rgba(255,255,255,0.08);
+      border-left-color: #F5A623;
+    }
+
+    /* Main content */
+    .main { flex: 1; max-width: 900px; padding: 40px 48px 80px; }
+    h1 { font-size: 28px; font-weight: 800; color: var(--blue-dark); margin-bottom: 8px; }
+    .manual-subtitle { font-size: 14px; color: #5A6A8A; margin-bottom: 40px; }
+    h2 {
+      font-size: 20px; font-weight: 700; color: var(--blue-dark);
+      margin: 48px 0 12px; padding-bottom: 8px;
+      border-bottom: 2px solid #DCE5F5;
+    }
+    h2:first-of-type { margin-top: 0; }
+    h3 { font-size: 15px; font-weight: 700; color: var(--text); margin: 28px 0 8px; }
+    p { margin-bottom: 12px; font-size: 14px; }
+    ul, ol { margin: 0 0 14px 20px; font-size: 14px; }
+    li { margin-bottom: 5px; }
+    strong { color: var(--blue-dark); }
+
+    /* Screenshot blocks */
+    .screenshot {
+      margin: 16px 0 24px;
+      border: 1px solid #C8D8F0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,48,135,0.08);
+    }
+    .screenshot img { width: 100%; height: auto; display: block; }
+    .screenshot-caption {
+      background: #F0F4FB; border-top: 1px solid #C8D8F0;
+      padding: 8px 14px; font-size: 11.5px; color: #5A6A8A; font-style: italic;
+    }
+
+    /* Callout boxes */
+    .callout {
+      border-radius: var(--radius); padding: 12px 16px;
+      margin: 16px 0; font-size: 13.5px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .callout .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .callout.info  { background: var(--blue-light); border-left: 4px solid var(--blue-mid); }
+    .callout.tip   { background: #E8F5E9; border-left: 4px solid #2E7D32; }
+    .callout.warn  { background: #FFF8E1; border-left: 4px solid #F9A825; }
+
+    /* Inline badge demos */
+    .badge-demo { display: inline-flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 10px;
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .badge-new   { background: #EEF2F8; color: #4A5568; border: 1px solid #CBD5E0; }
+    .badge-act   { background: #D4F0DC; color: #1B5E20; border: 1px solid #7FCC9A; }
+    .badge-na    { background: #F5E6FF; color: #5B1A8A; border: 1px solid #BF80E8; }
+    .badge-snz   { background: #FFF3CD; color: #7A5800; border: 1px solid #E8C84A; }
+
+    /* Steps */
+    .steps { counter-reset: step-counter; margin: 8px 0 16px; padding: 0; list-style: none; }
+    .steps li {
+      counter-increment: step-counter; padding: 10px 10px 10px 44px;
+      position: relative; border-left: 2px solid #DCE5F5;
+      margin-bottom: 2px; font-size: 14px;
+    }
+    .steps li::before {
+      content: counter(step-counter);
+      position: absolute; left: -13px; top: 8px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--blue-mid); color: #fff;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Table */
+    .ref-table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+    .ref-table th { background: var(--blue-dark); color: #fff; padding: 8px 12px; text-align: left; font-size: 12px; }
+    .ref-table td { padding: 8px 12px; border-bottom: 1px solid #DCE5F5; }
+    .ref-table tr:last-child td { border-bottom: none; }
+    .ref-table tr:nth-child(even) td { background: #F7F9FC; }
+
+    /* Divider */
+    .section-divider { border: none; border-top: 1px solid #DCE5F5; margin: 40px 0 0; }
+
+    /* Page number / header */
+    .page-header {
+      background: var(--blue-dark); color: #fff;
+      padding: 16px 48px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .page-header-logo { font-size: 16px; font-weight: 900; letter-spacing: 1px; }
+    .page-header-logo span { color: #F5A623; }
+    .page-header-title { font-size: 13px; opacity: 0.85; }
+    .page-header-version { font-size: 11px; opacity: 0.6; }
+
+    @media (max-width: 780px) {
+      .sidebar { display: none; }
+      .main { padding: 20px 18px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-header-logo">Mc<span>K</span>ESSON Canada</div>
+  <div class="page-header-title">Sales Data for Growth (SDFG) — User Manual</div>
+  <div class="page-header-version">v2.1 · May 2026</div>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar TOC -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mck">Mc<span>K</span>ESSON</div>
+      <div class="logo-sub">Sales Data for Growth</div>
+      <div class="logo-manual">User Manual — v2.1</div>
+    </div>
+    <div class="toc-section">
+      <div class="toc-group-label">Getting Started</div>
+      <a class="toc-link" href="#overview">Overview</a>
+      <a class="toc-link" href="#layout">Page Layout</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-group-label">Control Bar</div>
+      <a class="toc-link" href="#sensitivity">Anomaly Sensitivity</a>
+      <a class="toc-link" href="#persistence">Persistence Window</a>
+      <a class="toc-link" href="#rxotc">RX / OTC Filter</a>
+      <a class="toc-link" href="#worklist">Worklist View</a>
+      <a class="toc-link" href="#search">Search &amp; Rep Filter</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-group-label">Tabs</div>
+      <a class="toc-link" href="#tab-prim-opp">Primary — Opportunities</a>
+      <a class="toc-link" href="#tab-prim-leak">Primary — Leakage</a>
+      <a class="toc-link" href="#tab-sec-opp">Secondary — Opportunities</a>
+      <a class="toc-link" href="#tab-sec-leak">Secondary — Leakage</a>
+      <a class="toc-link" href="#tab-kpi">KPI Ranking</a>
+      <a class="toc-link" href="#tab-relative">Relative Impact</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-group-label">Detail Panel</div>
+      <a class="toc-link" href="#detail-panel">Opening the Panel</a>
+      <a class="toc-link" href="#fidelity">Fidelity Data</a>
+      <a class="toc-link" href="#product-trend">Product Trend</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-group-label">Worklist &amp; Actions</div>
+      <a class="toc-link" href="#action-statuses">Status Badges</a>
+      <a class="toc-link" href="#update-form">Update Status Form</a>
+      <a class="toc-link" href="#worklist-flow">Worklist Workflow</a>
+    </div>
+    <div class="toc-section">
+      <div class="toc-group-label">Reference</div>
+      <a class="toc-link" href="#data-refresh">Data Refresh</a>
+      <a class="toc-link" href="#glossary">Glossary</a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <h1>Sales Data for Growth (SDFG) — User Manual</h1>
+    <p class="manual-subtitle">McKesson Canada · Version 2.1 · Data through May 2, 2026 · Last updated May 2026</p>
+
+    <!-- ── OVERVIEW ─────────────────────────────────────────────── -->
+    <h2 id="overview">Overview</h2>
+    <p>
+      The <strong>Sales Data for Growth (SDFG)</strong> tool is a sales intelligence dashboard for McKesson Canada field representatives and managers. It surfaces pharmacy-level sales signals — both growth opportunities and leakage risks — ranked by their potential dollar impact, and provides a structured worklist to track and manage rep actions.
+    </p>
+    <p>SDFG v2.1 introduces a full <strong>action worklist</strong> alongside the six analytical views from v2.0. Every store signal can be assigned a status (Actioned, Snoozed, Not Actionable) with a reason code, and reps can move through their queue without losing their list context.</p>
+
+    <div class="callout info">
+      <div class="icon">ℹ️</div>
+      <div><strong>This is a prototype.</strong> Data is synthetic and for demonstration purposes only. localStorage is used to persist worklist state in the browser — no data is sent to a server.</div>
+    </div>
+
+    <!-- ── LAYOUT ─────────────────────────────────────────────────── -->
+    <h2 id="layout">Page Layout</h2>
+    <p>The dashboard is structured into four fixed zones:</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/01-dashboard.png" alt="SDFG Dashboard overview — Primary Opportunities tab" />
+      <div class="screenshot-caption">Figure 1 — Default view on load: Primary Opportunities tab, To Review worklist. The Status column is hidden in this view to reduce noise.</div>
+    </div>
+
+    <table class="ref-table">
+      <thead><tr><th>Zone</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Header bar</strong></td><td>McKesson branding, tool title, and data refresh timestamp</td></tr>
+        <tr><td><strong>Control bar (Row 1)</strong></td><td>Signal filters: Anomaly Sensitivity, Persistence Window, RX/OTC</td></tr>
+        <tr><td><strong>Control bar (Row 2)</strong></td><td>Worklist View dropdown, Search box, Rep filter</td></tr>
+        <tr><td><strong>Tab navigation</strong></td><td>Six analytical views (see Tabs section)</td></tr>
+        <tr><td><strong>Store list</strong></td><td>Ranked, filterable table of stores with signals</td></tr>
+        <tr><td><strong>Detail panel</strong></td><td>Slides up from the bottom when a store row is clicked</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ── SENSITIVITY ────────────────────────────────────────────── -->
+    <hr class="section-divider" />
+    <h2 id="sensitivity">Anomaly Sensitivity</h2>
+    <p>Controls the minimum signal strength required for a store to appear in the list. A higher sensitivity setting means fewer, stronger signals; a lower setting includes more stores with smaller deviations.</p>
+
+    <table class="ref-table">
+      <thead><tr><th>Setting</th><th>Approx. Signal % Threshold</th><th>Typical Use</th></tr></thead>
+      <tbody>
+        <tr><td>Low</td><td>&gt; 5%</td><td>Broad sweep — find all deviations</td></tr>
+        <tr><td>Medium</td><td>&gt; 10%</td><td>Balanced view for regular review</td></tr>
+        <tr><td><strong>High</strong> (default)</td><td>&gt; 20%</td><td>Focus on material signals</td></tr>
+        <tr><td>Very High</td><td>&gt; 35%</td><td>Only the strongest anomalies</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <div class="icon">💡</div>
+      <div>Start your week at <strong>High</strong> to prioritise the most impactful stores, then drop to <strong>Medium</strong> if the list is short.</div>
+    </div>
+
+    <!-- ── PERSISTENCE ────────────────────────────────────────────── -->
+    <h2 id="persistence">Persistence Window</h2>
+    <p>The persistence window determines how many consecutive weeks a signal must be present before the store is flagged. Longer windows filter out one-off spikes.</p>
+
+    <table class="ref-table">
+      <thead><tr><th>Setting</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>2 Weeks</td><td>Signal present for at least 2 consecutive weeks</td></tr>
+        <tr><td><strong>3 Weeks</strong> (default)</td><td>Signal present for at least 3 consecutive weeks</td></tr>
+        <tr><td>4 Weeks</td><td>Only sustained, long-running signals</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ── RXOTC ───────────────────────────────────────────────────── -->
+    <h2 id="rxotc">RX / OTC Filter</h2>
+    <p>Limits the store list to pharmacies with signals in the <strong>Prescription (RX)</strong> category, <strong>Over-the-Counter (OTC)</strong>, or both (default: All).</p>
+
+    <!-- ── WORKLIST ───────────────────────────────────────────────── -->
+    <h2 id="worklist">Worklist View</h2>
+    <p>The <strong>Worklist View</strong> dropdown is the primary way to work through your queue of store signals. Each store has an action status stored in your browser; the dropdown filters the list to show only stores in the selected bucket.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/11-all-view-status.png" alt="All worklist view showing Status badges" />
+      <div class="screenshot-caption">Figure 2 — The "All" view shows every store regardless of status. The Status column and pencil icon are visible.</div>
+    </div>
+
+    <table class="ref-table">
+      <thead><tr><th>View</th><th>Shows</th></tr></thead>
+      <tbody>
+        <tr><td>📋 <strong>To Review</strong> (default)</td><td>Stores with no action yet assigned — your daily starting point. Status column is hidden to reduce visual noise.</td></tr>
+        <tr><td>⏳ <strong>Snoozed</strong></td><td>Stores you have temporarily parked (snooze date still in the future)</td></tr>
+        <tr><td>✅ <strong>Actioned</strong></td><td>Stores where you have logged a completed action</td></tr>
+        <tr><td>🚫 <strong>Not Actionable</strong></td><td>Stores permanently removed from the queue with a reason</td></tr>
+        <tr><td><strong>All</strong></td><td>All stores regardless of status — useful for reporting and auditing</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Status badges</h3>
+    <div id="action-statuses" class="badge-demo">
+      <span class="badge badge-new">📋 To Review</span>
+      <span class="badge badge-act">✅ Actioned</span>
+      <span class="badge badge-snz">⏳ Snoozed (Aug 01)</span>
+      <span class="badge badge-na">🚫 Not Actionable</span>
+    </div>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/13-actioned-view.png" alt="Actioned worklist view" />
+      <div class="screenshot-caption">Figure 3 — Actioned view: stores where a rep has logged a completed action. The reason (e.g., "Discussed with pharmacist") appears beneath the badge.</div>
+    </div>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/12-snoozed-view.png" alt="Snoozed worklist view" />
+      <div class="screenshot-caption">Figure 4 — Snoozed view: stores parked temporarily. The badge shows the snooze expiry date (e.g., "Snoozed (Aug 01)"). When the date passes, the store automatically returns to To Review.</div>
+    </div>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/14-not-actionable-view.png" alt="Not Actionable worklist view" />
+      <div class="screenshot-caption">Figure 5 — Not Actionable view: stores permanently removed from the active queue (e.g., competitor lock, contract limitation).</div>
+    </div>
+
+    <!-- ── SEARCH ─────────────────────────────────────────────────── -->
+    <h2 id="search">Search &amp; Rep Filter</h2>
+    <p>The <strong>Search</strong> box filters by store name or city (case-insensitive). The <strong>Rep</strong> dropdown further limits the list to a single rep's stores. Both filters work together and update the count badge instantly.</p>
+
+    <div class="callout tip">
+      <div class="icon">💡</div>
+      <div>Managers can use the Rep filter in combination with Worklist View to see the worklist status for a specific rep — e.g., "Snoozed + Rep: Catherine Lacoste".</div>
+    </div>
+
+    <!-- ── TABS ───────────────────────────────────────────────────── -->
+    <hr class="section-divider" />
+    <h2 id="tab-prim-opp">Tab: Primary — Opportunities</h2>
+    <p>Shows primary pharmacies where McKesson sales are <em>growing faster than expected</em> based on IQVIA market data — stores to engage with quickly to lock in the opportunity.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/01-dashboard.png" alt="Primary Opportunities tab" />
+      <div class="screenshot-caption">Figure 6 — Primary Opportunities: stores ranked by Signal $ Delta (highest impact first). Each row shows Pharmacy, Rep, Signal %, Fidelity %, and Status.</div>
+    </div>
+
+    <p>Columns in this view:</p>
+    <table class="ref-table">
+      <thead><tr><th>Column</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>✏️ (Pencil)</td><td>Click to open the Update Status form for this store</td></tr>
+        <tr><td>Pharmacy</td><td>Store name, ID, city, and banner</td></tr>
+        <tr><td>Rep</td><td>Assigned sales representative</td></tr>
+        <tr><td>Signal %</td><td>Percentage deviation from expected trend (colour-coded: green = positive, red = negative)</td></tr>
+        <tr><td>Fidelity %</td><td>Data completeness score — higher = more reliable signal</td></tr>
+        <tr><td>Status</td><td>Current worklist status badge + reason (hidden in To Review mode)</td></tr>
+        <tr><td>Signal $ Delta</td><td>Estimated dollar impact of the signal (default sort column)</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="tab-prim-leak">Tab: Primary — Leakage</h2>
+    <p>Shows primary pharmacies where McKesson sales are <em>declining relative to the market</em> — stores at risk of losing business to competitors.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/02-tab-leakage.png" alt="Primary Leakage tab" />
+      <div class="screenshot-caption">Figure 7 — Primary Leakage tab. Signal % badges are red/orange to indicate negative deviations.</div>
+    </div>
+
+    <h2 id="tab-sec-opp">Tab: Secondary — Opportunities</h2>
+    <p>Same logic as Primary Opportunities but for <strong>secondary pharmacies</strong> — stores not in the primary rep territory but still served by McKesson.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/03-tab-sec-opp.png" alt="Secondary Opportunities tab" />
+      <div class="screenshot-caption">Figure 8 — Secondary Opportunities tab.</div>
+    </div>
+
+    <h2 id="tab-sec-leak">Tab: Secondary — Leakage</h2>
+    <p>Leakage signals for secondary pharmacies.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/04-tab-sec-leak.png" alt="Secondary Leakage tab" />
+      <div class="screenshot-caption">Figure 9 — Secondary Leakage tab.</div>
+    </div>
+
+    <h2 id="tab-kpi">Tab: Primary Opp 2 — KPI Ranking</h2>
+    <p>A multi-metric view that ranks stores by a composite of KPI signals across Direct and Indirect channels. Includes a Fidelity column split showing <strong>Direct (IQVIA)</strong>, <strong>Indirect (IQVIA)</strong>, and <strong>McKesson Sales (IQVIA)</strong> fidelity tiers.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/05-tab-kpi.png" alt="KPI Ranking tab" />
+      <div class="screenshot-caption">Figure 10 — KPI Ranking tab with three fidelity tiers shown per store.</div>
+    </div>
+
+    <h2 id="tab-relative">Tab: Primary Opp 3 — Relative Impact</h2>
+    <p>Ranks stores by <strong>relative market share opportunity</strong> — stores where McKesson's share of the local market is significantly below peers, indicating headroom to grow.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/06-tab-relative.png" alt="Relative Impact tab" />
+      <div class="screenshot-caption">Figure 11 — Relative Impact tab.</div>
+    </div>
+
+    <!-- ── DETAIL PANEL ───────────────────────────────────────────── -->
+    <hr class="section-divider" />
+    <h2 id="detail-panel">Detail Panel</h2>
+    <p>Click any store row to open the <strong>detail panel</strong> at the bottom of the page. It shows:</p>
+    <ul>
+      <li>FY26 and FYTD sales figures with growth vs. prior year</li>
+      <li>Fidelity score for the last month</li>
+      <li>Last 3-week actuals (sales, signal %, signal $ delta)</li>
+      <li>52-week McKesson sales chart</li>
+      <li>Signal interpretation text</li>
+      <li>Action buttons: See Fidelity Data, Analyse Product Trend, ✏️ Update Status, Close</li>
+    </ul>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/15-detail-panel.png" alt="Store detail panel" />
+      <div class="screenshot-caption">Figure 12 — Store detail panel slides up from the bottom. Click the same row again or "✕ Close" to dismiss.</div>
+    </div>
+
+    <div class="callout tip">
+      <div class="icon">💡</div>
+      <div>The detail panel's <strong>✏️ Update Status</strong> button and the pencil icon in the table both open the same Update Status form — use whichever is more convenient.</div>
+    </div>
+
+    <h2 id="fidelity">Fidelity Data</h2>
+    <p>Click <strong>📊 See Fidelity Data</strong> in the detail panel to view a 12-month trend of data completeness scores. Fidelity measures how much of the expected IQVIA data was received for that store. A score below ~85% means the signal may be noisy.</p>
+
+    <h2 id="product-trend">Product Trend Analysis</h2>
+    <p>Click <strong>📦 Analyse Product Trend</strong> to open a product-level breakdown panel for the selected store. This shows which products are driving the signal and compares performance to peers.</p>
+
+    <!-- ── ACTION FORM ─────────────────────────────────────────────── -->
+    <hr class="section-divider" />
+    <h2 id="update-form">Update Status Form</h2>
+    <p>The Update Status form lets you assign or change the worklist status for a specific store. Open it by clicking the <strong>✏️ pencil icon</strong> in the table row or <strong>✏️ Update Status</strong> in the detail panel.</p>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/08-action-form-actioned.png" alt="Action form — Actioned status selected" />
+      <div class="screenshot-caption">Figure 13 — Update Status form with "Actioned" selected. A Reason Code field appears below the Status dropdown.</div>
+    </div>
+
+    <h3>Status options</h3>
+    <table class="ref-table">
+      <thead><tr><th>Status</th><th>When to use</th><th>Requires reason?</th></tr></thead>
+      <tbody>
+        <tr><td>📋 To Review</td><td>Reset a store back to the unprocessed queue</td><td>No</td></tr>
+        <tr><td>✅ Actioned</td><td>You have taken action (call, visit, discussion)</td><td>Yes</td></tr>
+        <tr><td>🚫 Not Actionable (Permanent)</td><td>No action possible, will not change (e.g., competitor lock)</td><td>Yes</td></tr>
+        <tr><td>⏳ Not Actionable (Temporary / Snooze)</td><td>Temporarily park the store — re-surfaces after the snooze date</td><td>Yes + Snooze date</td></tr>
+      </tbody>
+    </table>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/09-action-form-snoozed.png" alt="Action form — Snoozed status selected" />
+      <div class="screenshot-caption">Figure 14 — Snooze view: select a standard duration (1–8 weeks) or a custom date. The store will automatically reappear in "To Review" after the date passes.</div>
+    </div>
+
+    <div class="screenshot">
+      <img src="manual-screenshots/10-action-form-permanent.png" alt="Action form — Not Actionable (Permanent)" />
+      <div class="screenshot-caption">Figure 15 — Not Actionable (Permanent): the Reason Code options are filtered to those appropriate for permanent removal.</div>
+    </div>
+
+    <h3>Saving and navigation</h3>
+    <ol class="steps">
+      <li>Choose an <strong>Action Status</strong> from the dropdown</li>
+      <li>If required, select a <strong>Reason Code</strong> (or enter free text if "Other" is chosen)</li>
+      <li>For Snoozed status, pick a <strong>snooze duration</strong> or custom date</li>
+      <li>Click <strong>Save Status</strong></li>
+      <li>You are returned to the <strong>exact same list and filter</strong> you came from — no context is lost</li>
+    </ol>
+
+    <div class="callout tip">
+      <div class="icon">💡</div>
+      <div>If you opened the form from the Snoozed view, you return to the Snoozed view after saving. If from the All view, you return to All. The Worklist View and active tab are both preserved.</div>
+    </div>
+
+    <!-- ── WORKLIST WORKFLOW ──────────────────────────────────────── -->
+    <h2 id="worklist-flow">Recommended Worklist Workflow</h2>
+    <p>A typical weekly workflow for reps:</p>
+    <ol class="steps">
+      <li>Open SDFG and ensure <strong>Worklist View = To Review</strong> (default)</li>
+      <li>Review stores from top (highest $ delta) to bottom</li>
+      <li>Click a row to see the detail panel; use <strong>✏️ Update Status</strong> to log your action</li>
+      <li>Stores you've actioned move out of To Review automatically</li>
+      <li>At end of week, switch to <strong>Snoozed</strong> to check if any have expired back to To Review</li>
+      <li>Use <strong>All</strong> view for reporting — shows full picture with all statuses</li>
+    </ol>
+
+    <!-- ── DATA REFRESH ──────────────────────────────────────────── -->
+    <hr class="section-divider" />
+    <h2 id="data-refresh">Data Refresh</h2>
+    <p>The data refresh schedule and cutoff dates are shown in the header bar:</p>
+    <ul>
+      <li><strong>Data through:</strong> The latest week of sales data included</li>
+      <li><strong>Refreshed:</strong> When the SDFG data was last processed and published</li>
+    </ul>
+    <p>Data is typically refreshed weekly on Tuesday mornings. If signals seem absent or stale, check the refresh date in the header.</p>
+
+    <!-- ── GLOSSARY ───────────────────────────────────────────────── -->
+    <h2 id="glossary">Glossary</h2>
+    <table class="ref-table">
+      <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Signal %</strong></td><td>The percentage deviation of recent McKesson sales vs. the expected trend based on IQVIA market data</td></tr>
+        <tr><td><strong>Signal $ Delta</strong></td><td>The dollar value of the gap between actual and expected sales. Positive = opportunity; negative = leakage.</td></tr>
+        <tr><td><strong>Fidelity %</strong></td><td>Data completeness score for IQVIA data at that store. Low fidelity means the signal is less reliable.</td></tr>
+        <tr><td><strong>Persistence Window</strong></td><td>The number of consecutive weeks a signal must be present to be flagged</td></tr>
+        <tr><td><strong>Anomaly Sensitivity</strong></td><td>The minimum signal strength (%) required to appear in the list</td></tr>
+        <tr><td><strong>Primary pharmacy</strong></td><td>A pharmacy in the rep's primary territory</td></tr>
+        <tr><td><strong>Secondary pharmacy</strong></td><td>A pharmacy served by McKesson but outside the primary territory</td></tr>
+        <tr><td><strong>Worklist</strong></td><td>The system of action statuses (To Review / Snoozed / Actioned / Not Actionable) used to manage the queue</td></tr>
+        <tr><td><strong>Snooze</strong></td><td>A temporary "Not Actionable" status with an expiry date, after which the store returns to To Review</td></tr>
+        <tr><td><strong>IQVIA</strong></td><td>Third-party pharmaceutical market data provider used for benchmarking and fidelity scoring</td></tr>
+        <tr><td><strong>RX</strong></td><td>Prescription products</td></tr>
+        <tr><td><strong>OTC</strong></td><td>Over-the-counter (non-prescription) products</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info" style="margin-top:40px;">
+      <div class="icon">ℹ️</div>
+      <div>
+        <strong>Questions or feedback?</strong> This is a prototype. For issues or feature requests, contact the SDFG product team.
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Highlight active TOC link on scroll
+  const sections = document.querySelectorAll('[id]');
+  const tocLinks = document.querySelectorAll('.toc-link');
+  function updateTOC() {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    tocLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateTOC, { passive: true });
+  updateTOC();
+</script>
+</body>
+</html>
