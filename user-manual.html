@@ -151,14 +151,118 @@
       .sidebar { display: none; }
       .main { padding: 20px 18px 60px; }
     }
+
+    /* ── Editor UI ──────────────────────────────────────────────── */
+    .edit-mode-btn {
+      padding: 6px 16px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.5);
+      background: transparent; color: #fff; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .edit-mode-btn:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+    .edit-mode-btn.active { background: #F5A623; border-color: #F5A623; color: #1A2744; }
+
+    /* Floating toolbar */
+    #editor-toolbar {
+      display: none;
+      position: fixed; top: 62px; left: 50%; transform: translateX(-50%);
+      z-index: 900;
+      background: #1A2744; border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+      padding: 6px 10px; gap: 2px;
+      align-items: center; flex-wrap: wrap;
+    }
+    #editor-toolbar.visible { display: flex; }
+    .tb-btn {
+      padding: 5px 9px; border: none; border-radius: 5px;
+      background: transparent; color: #C8D8F0; font-size: 13px;
+      cursor: pointer; transition: background 0.1s; white-space: nowrap;
+    }
+    .tb-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .tb-btn.pressed { background: rgba(245,166,35,0.25); color: #F5A623; }
+    .tb-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 4px; }
+    .tb-export {
+      padding: 5px 14px; border-radius: 5px; border: none;
+      background: #1B7A4A; color: #fff; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .tb-export:hover { background: #145C38; }
+    .tb-label { font-size: 10px; color: rgba(255,255,255,0.4); padding: 0 6px; }
+
+    /* Editable regions in edit mode */
+    body.editing .editable:hover {
+      outline: 2px dashed rgba(245,166,35,0.5); border-radius: 3px; cursor: text;
+    }
+    body.editing .editable:focus {
+      outline: 2px solid #F5A623; border-radius: 3px;
+      background: rgba(245,166,35,0.04);
+    }
+    /* Caption edit handle */
+    body.editing .screenshot-caption {
+      cursor: text;
+    }
+    body.editing .screenshot-caption:hover {
+      outline: 2px dashed rgba(245,166,35,0.5); border-radius: 3px;
+    }
+    body.editing .screenshot-caption:focus {
+      outline: 2px solid #F5A623; border-radius: 3px;
+      background: rgba(245,166,35,0.04);
+    }
+    /* Screenshot swap overlay */
+    body.editing .screenshot { position: relative; }
+    .img-swap-btn {
+      display: none;
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(0,0,0,0.6); color: #fff; border: none;
+      border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600;
+      cursor: pointer; z-index: 10; transition: background 0.12s;
+    }
+    .img-swap-btn:hover { background: rgba(0,0,0,0.85); }
+    body.editing .screenshot:hover .img-swap-btn { display: block; }
+    /* Edit mode banner */
+    .edit-banner {
+      display: none; position: fixed; bottom: 16px; right: 16px;
+      background: #1A2744; color: #F5A623; border-radius: 8px;
+      padding: 8px 16px; font-size: 12px; font-weight: 700;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3); z-index: 800;
+      border: 1px solid rgba(245,166,35,0.4);
+    }
+    body.editing .edit-banner { display: block; }
   </style>
 </head>
 <body>
+
+<!-- Hidden file input for image swap -->
+<input type="file" id="img-file-input" accept="image/*" style="display:none">
+
+<!-- Editor toolbar (shown in edit mode) -->
+<div id="editor-toolbar">
+  <span class="tb-label">FORMAT</span>
+  <button class="tb-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+  <button class="tb-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+  <button class="tb-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+  <div class="tb-sep"></div>
+  <span class="tb-label">STYLE</span>
+  <button class="tb-btn" onclick="fmtBlock('h2')" title="Section heading">H2</button>
+  <button class="tb-btn" onclick="fmtBlock('h3')" title="Sub-heading">H3</button>
+  <button class="tb-btn" onclick="fmtBlock('p')" title="Body paragraph">¶</button>
+  <div class="tb-sep"></div>
+  <span class="tb-label">LISTS</span>
+  <button class="tb-btn" onclick="fmt('insertUnorderedList')" title="Bullet list">• List</button>
+  <button class="tb-btn" onclick="fmt('insertOrderedList')" title="Numbered list"># List</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="fmt('undo')" title="Undo">↩ Undo</button>
+  <button class="tb-btn" onclick="fmt('redo')" title="Redo">↪ Redo</button>
+  <div class="tb-sep"></div>
+  <button class="tb-export" onclick="exportHTML()">💾 Export HTML</button>
+</div>
+
+<div class="edit-banner">✏️ Edit Mode — click any text to edit</div>
 
 <div class="page-header">
   <div class="page-header-logo">Mc<span>K</span>ESSON Canada</div>
   <div class="page-header-title">Sales Data for Growth (SDFG) — User Manual</div>
   <div class="page-header-version">v2.1 · May 2026</div>
+  <button class="edit-mode-btn" id="edit-toggle" onclick="toggleEditMode()">✏️ Edit</button>
 </div>
 
 <div class="layout">
@@ -530,7 +634,7 @@
 </div>
 
 <script>
-  // Highlight active TOC link on scroll
+  // ── TOC scroll highlight ──────────────────────────────────────────────────
   const sections = document.querySelectorAll('[id]');
   const tocLinks = document.querySelectorAll('.toc-link');
   function updateTOC() {
@@ -544,6 +648,105 @@
   }
   window.addEventListener('scroll', updateTOC, { passive: true });
   updateTOC();
+
+  // ── Editor ───────────────────────────────────────────────────────────────
+  let editMode = false;
+  let pendingImgEl = null;
+
+  // Elements to make editable: paragraphs, headings, list items, table cells, captions, callout text
+  const EDITABLE_SEL = '.main p, .main h1, .main h2, .main h3, .main li, .main td, .main th, .screenshot-caption, .callout > div:last-child';
+
+  function toggleEditMode() {
+    editMode = !editMode;
+    document.body.classList.toggle('editing', editMode);
+    const btn = document.getElementById('edit-toggle');
+    const toolbar = document.getElementById('editor-toolbar');
+
+    if (editMode) {
+      // Make content areas editable
+      document.querySelectorAll(EDITABLE_SEL).forEach(el => {
+        el.classList.add('editable');
+        el.contentEditable = 'true';
+        el.spellcheck = true;
+      });
+      // Also make captions editable
+      document.querySelectorAll('.screenshot-caption').forEach(el => {
+        el.contentEditable = 'true';
+        el.spellcheck = true;
+      });
+      // Add swap buttons to screenshots
+      document.querySelectorAll('.screenshot').forEach(sc => {
+        if (!sc.querySelector('.img-swap-btn')) {
+          const swapBtn = document.createElement('button');
+          swapBtn.className = 'img-swap-btn';
+          swapBtn.textContent = '🖼 Swap image';
+          swapBtn.onclick = (e) => { e.stopPropagation(); triggerImgSwap(sc.querySelector('img')); };
+          sc.style.position = 'relative';
+          sc.prepend(swapBtn);
+        }
+      });
+      btn.textContent = '✅ Done Editing';
+      btn.classList.add('active');
+      toolbar.classList.add('visible');
+    } else {
+      // Remove editable
+      document.querySelectorAll('[contenteditable]').forEach(el => {
+        el.contentEditable = 'false';
+        el.classList.remove('editable');
+      });
+      btn.textContent = '✏️ Edit';
+      btn.classList.remove('active');
+      toolbar.classList.remove('visible');
+    }
+  }
+
+  // ── Formatting commands ───────────────────────────────────────────────────
+  function fmt(cmd) {
+    document.execCommand(cmd, false, null);
+  }
+  function fmtBlock(tag) {
+    document.execCommand('formatBlock', false, tag);
+  }
+
+  // ── Image swap ────────────────────────────────────────────────────────────
+  function triggerImgSwap(imgEl) {
+    pendingImgEl = imgEl;
+    document.getElementById('img-file-input').click();
+  }
+  document.getElementById('img-file-input').addEventListener('change', function() {
+    if (!this.files || !this.files[0] || !pendingImgEl) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pendingImgEl.src = e.target.result;
+      pendingImgEl = null;
+    };
+    reader.readAsDataURL(this.files[0]);
+    this.value = ''; // reset so same file can be re-selected
+  });
+
+  // ── Export HTML ───────────────────────────────────────────────────────────
+  function exportHTML() {
+    // Temporarily disable editing before capture so contenteditable attrs are clean
+    const editables = document.querySelectorAll('[contenteditable="true"]');
+    editables.forEach(el => el.removeAttribute('contenteditable'));
+
+    // Clone the full document
+    const doctype = '<!DOCTYPE html>\n';
+    const html = document.documentElement.outerHTML;
+
+    // Restore editing
+    editables.forEach(el => el.contentEditable = 'true');
+
+    // Download
+    const blob = new Blob([doctype + html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'user-manual.html';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
 </script>
 </body>
 </html>
